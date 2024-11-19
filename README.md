@@ -54,6 +54,9 @@ docker-compose pull
 # Start the services
 docker-compose up -d
 
+# Stop the services
+docker-compose down
+
 # View logs
 docker-compose logs -f
 ```
