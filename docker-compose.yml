@@ -1,0 +1,31 @@
+services:
+  hublink-gateway:
+    image: neurotechhub/hublink-gateway:latest
+    restart: always
+    privileged: true
+    network_mode: host
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+    volumes:
+      - ${DATA_DIRECTORY}:/data:z,sync
+      - /var/run/dbus:/var/run/dbus
+      - /var/run/bluetooth:/var/run/bluetooth
+    group_add:
+      - bluetooth
+    environment:
+      - TZ=America/Chicago
+      - GATEWAY_NAME=${GATEWAY_NAME}
+      - SECRET_URL=${SECRET_URL}
+      - DATA_DIRECTORY=/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/status"]
+      interval: 30s
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=30
