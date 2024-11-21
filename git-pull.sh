@@ -3,4 +3,4 @@
 # git-pull.sh
 git reset --hard HEAD
 git clean -fd
-git pull origin <branch>
+git pull origin main

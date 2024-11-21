@@ -10,7 +10,7 @@ cd hublink-gateway
 
 2. Run installation scripts:
 ```bash
-chmod +x install.sh setup-cron.sh git-pull.sh
+chmod +x install.sh setup-cron.sh git-pull.sh docker-pull.sh
 sudo ./install.sh
 sudo ./setup-cron.sh
 ```
