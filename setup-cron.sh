@@ -36,3 +36,6 @@ echo "Current cron jobs:" | tee -a "$log_file"
 sudo -u $ACTUAL_USER crontab -l | tee -a "$log_file"
 
 echo "Cron setup complete!" | tee -a "$log_file" 
+
+# echo "Enabling at boot..." | tee -a "$log_file"
+# docker update --restart unless-stopped hublink-gateway-hublink-gateway-1
