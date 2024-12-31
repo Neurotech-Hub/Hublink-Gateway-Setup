@@ -88,3 +88,19 @@ Job for docker.service failed because the control process exited with error code
 See "systemctl status docker.service" and "journalctl -xeu docker.service" for details.
 
 ```
+
+× docker.service - Docker Application Container Engine
+     Loaded: loaded (/lib/systemd/system/docker.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Tue 2024-12-31 13:48:34 CST; 5min ago
+   Duration: 1min 10.774s
+TriggeredBy: × docker.socket
+       Docs: https://docs.docker.com
+    Process: 113483 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock (code=exited, status=1/>
+   Main PID: 113483 (code=exited, status=1/FAILURE)
+        CPU: 38ms
+
+Dec 31 13:48:34 raspberrypi systemd[1]: docker.service: Scheduled restart job, restart counter is at 3.
+Dec 31 13:48:34 raspberrypi systemd[1]: Stopped docker.service - Docker Application Container Engine.
+Dec 31 13:48:34 raspberrypi systemd[1]: docker.service: Start request repeated too quickly.
+Dec 31 13:48:34 raspberrypi systemd[1]: docker.service: Failed with result 'exit-code'.
+Dec 31 13:48:34 raspberrypi systemd[1]: Failed to start docker.service - Docker Application Container Engine.
