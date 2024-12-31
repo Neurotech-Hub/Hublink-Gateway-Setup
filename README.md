@@ -83,8 +83,4 @@ docker inspect --format='{{.State.Health.Status}}' hublink-gateway_hublink-gatew
 3. View detailed logs:
 ```bash
 docker-compose logs --tail=100
-
-Job for docker.service failed because the control process exited with error code.
-See "systemctl status docker.service" and "journalctl -xeu docker.service" for details.
-
 ```
