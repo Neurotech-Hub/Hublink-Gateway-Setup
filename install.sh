@@ -40,4 +40,25 @@ echo "Verifying installations..." | tee -a "$log_file"
 docker --version | tee -a "$log_file"
 docker-compose --version | tee -a "$log_file"
 
+# Add warning about privileged mode
+echo -e "\n⚠️  WARNING: System will be configured to run Docker in privileged mode by default" | tee -a "$log_file"
+echo "This gives containers full access to host devices and kernel capabilities." | tee -a "$log_file"
+
+# Create docker daemon configuration for privileged mode
+echo "Configuring Docker daemon for privileged mode..." | tee -a "$log_file"
+cat > /etc/docker/daemon.json <<EOL
+{
+  "default-runtime": "runc",
+  "runtimes": {
+    "runc": {
+      "args": ["--privileged"]
+    }
+  }
+}
+EOL
+
+# Restart Docker service to apply changes
+systemctl restart docker
+
+echo "Docker has been configured to run in privileged mode by default." | tee -a "$log_file"
 echo "Installation complete! Please log out and back in for group changes to take effect." | tee -a "$log_file"
