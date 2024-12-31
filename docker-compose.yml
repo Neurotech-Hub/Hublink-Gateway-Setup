@@ -8,6 +8,8 @@ services:
     stop_signal: SIGTERM
     volumes:
       - ${DATA_DIRECTORY}:/data:z,sync
+      - /var/run/dbus:/var/run/dbus
+      - /var/run/bluetooth:/var/run/bluetooth
     environment:
       - TZ=America/Chicago
       - GATEWAY_NAME=${GATEWAY_NAME}
