@@ -46,19 +46,20 @@ echo "This gives containers full access to host devices and kernel capabilities.
 
 # Create docker daemon configuration for privileged mode
 echo "Configuring Docker daemon for privileged mode..." | tee -a "$log_file"
+mkdir -p /etc/docker
 cat > /etc/docker/daemon.json <<EOL
 {
-  "default-runtime": "runc",
-  "runtimes": {
-    "runc": {
-      "args": ["--privileged"]
-    }
-  }
+  "default-runtime": "runc"
 }
 EOL
 
 # Restart Docker service to apply changes
-systemctl restart docker
+systemctl stop docker
+systemctl stop containerd
+sleep 2
+systemctl start containerd
+systemctl start docker
 
-echo "Docker has been configured to run in privileged mode by default." | tee -a "$log_file"
+echo "Docker has been configured. Verifying service status..." | tee -a "$log_file"
+systemctl status docker --no-pager | tee -a "$log_file"
 echo "Installation complete! Please log out and back in for group changes to take effect." | tee -a "$log_file"
