@@ -2,23 +2,24 @@
 
 ## Quick Start
 
-1. Clone and prepare the repository:
+Download and run the setup script:
 ```bash
-git clone https://github.com/Neurotech-Hub/Hublink-Gateway-Setup hublink-gateway
-cd hublink-gateway
+wget https://raw.githubusercontent.com/Neurotech-Hub/Hublink-Gateway-Setup/main/setup.sh
+chmod +x setup.sh
+sudo ./setup.sh
 ```
 
-2. Run installation scripts:
-```bash
-chmod +x install.sh setup-cron.sh git-pull.sh docker-pull.sh
-sudo ./install.sh
-sudo ./setup-cron.sh
-```
+This script will:
+1. Install Docker and required dependencies
+2. Download the latest configuration files
+3. Start the HubLink Gateway service
 
-3. Pull the latest version:
+After installation completes:
+1. Reboot your system:
 ```bash
-sudo ./git-pull.sh
+sudo reboot
 ```
+2. After reboot, the HubLink Gateway service will start automatically
 
 ## Configuration
 
@@ -32,22 +33,6 @@ SECRET_URL=https://your.api.url
 ```
 
 > **Note**: Keep the `.env` file secure and do not commit it to version control. All data will be stored in the directory specified by `DATA_DIRECTORY` and will persist across container restarts and updates.
-
-### Bluetooth Configuration (Optional)
-
-Set up Bluetooth permissions:
-```bash
-# Add users to bluetooth group
-sudo usermod -a -G bluetooth root
-sudo usermod -a -G bluetooth $USER
-
-# Verify bluetooth group members
-getent group bluetooth
-
-# Optional cleanup
-sudo apt autoremove -y
-sudo apt clean
-```
 
 ## Running the Gateway
 
