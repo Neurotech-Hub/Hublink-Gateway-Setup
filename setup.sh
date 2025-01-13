@@ -1,4 +1,5 @@
 #!/bin/bash
+#new setup script to wget docker-compose.yml
 
 # setup.sh
 set -e  # Exit on error
