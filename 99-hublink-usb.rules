@@ -1,9 +1,11 @@
+# Enable detailed logging for all USB block devices
+SUBSYSTEM=="block", KERNEL=="sd[a-z]*", ACTION=="add", RUN+="/usr/bin/logger -t hublink-udev 'USB Device Added - Kernel: %k, Name: %n, Number: %n, Label: $env{ID_FS_LABEL}, Type: $env{ID_FS_TYPE}'"
+
 # Match USB storage partitions with HUBLINK label
-SUBSYSTEM=="block", KERNEL=="sd[a-z]1", ACTION=="add", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/usr/local/bin/mount-hublink.sh %N"
+SUBSYSTEM=="block", KERNEL=="sd[a-z]1", ACTION=="add", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/bin/sh -c '/usr/bin/logger -t hublink-udev \"Attempting to mount HUBLINK drive at /dev/%k\" && /usr/local/bin/mount-hublink.sh %k'"
 
 # Handle removal of HUBLINK devices
 SUBSYSTEM=="block", KERNEL=="sd[a-z]1", ACTION=="remove", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/usr/local/bin/unmount-hublink.sh"
 
-# Add debug logging for all block devices
-SUBSYSTEM=="block", ACTION=="add", RUN+="/usr/bin/logger -t hublink-udev 'Device added: %N Label:$env{ID_FS_LABEL}'"
-SUBSYSTEM=="block", ACTION=="remove", RUN+="/usr/bin/logger -t hublink-udev 'Device removed: %N'" 
+# Log removals
+SUBSYSTEM=="block", KERNEL=="sd[a-z]*", ACTION=="remove", RUN+="/usr/bin/logger -t hublink-udev 'USB Device Removed - Kernel: %k'" 
