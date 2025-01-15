@@ -99,17 +99,9 @@ chmod 755 "${LOCAL_STORAGE_PATH}/data"
 chmod 755 "${REMOVEABLE_STORAGE_PATH}"
 echo "Created storage directories" | tee -a "$log_file"
 
-# Setup USB automounting
-echo "Setting up USB automounting..." | tee -a "$log_file"
-bash setup-usb.sh >> "$log_file" 2>&1
-
 # Setup data sync
 echo "Setting up data sync..." | tee -a "$log_file"
 bash setup-sync.sh >> "$log_file" 2>&1
-
-# Make entrypoint script executable
-echo "Making entrypoint script executable..." | tee -a "$log_file"
-chmod +x docker-entrypoint.sh
 
 # Start the services
 echo "Starting HubLink Gateway..." | tee -a "$log_file"
