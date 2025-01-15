@@ -32,9 +32,12 @@ fi
 
 logger "Using mount point: ${REMOVEABLE_STORAGE_PATH}"
 
-# Ensure mount point exists and is empty
+# Ensure parent directories exist and have correct permissions
+logger "Setting up mount path permissions..."
+chmod 755 /media
 mkdir -p "${REMOVEABLE_STORAGE_PATH}"
-chmod 777 "${REMOVEABLE_STORAGE_PATH}"
+chmod -R 777 "${REMOVEABLE_STORAGE_PATH}"
+chown root:root "${REMOVEABLE_STORAGE_PATH}"
 rm -rf "${REMOVEABLE_STORAGE_PATH:?}"/*
 
 # Get detailed device information
@@ -64,7 +67,7 @@ CURRENT_GID=$(id -g "$CURRENT_USER")
 logger "Using user $CURRENT_USER (UID:$CURRENT_UID GID:$CURRENT_GID) for mount"
 
 # Set mount options specifically for FAT32
-MOUNT_OPTS="rw,uid=$CURRENT_UID,gid=$CURRENT_GID,umask=000,dmask=000,fmask=000"
+MOUNT_OPTS="rw,uid=$CURRENT_UID,gid=$CURRENT_GID,umask=000,dmask=000,fmask=000,user"
 
 logger "Attempting mount with command: mount -t vfat -o $MOUNT_OPTS $DEVNAME ${REMOVEABLE_STORAGE_PATH}"
 
@@ -77,7 +80,7 @@ if [ $MOUNT_STATUS -eq 0 ]; then
     # Create data directory if it doesn't exist
     mkdir -p "${REMOVEABLE_STORAGE_PATH}/data"
     chmod 777 "${REMOVEABLE_STORAGE_PATH}/data"
-    chown -R "$CURRENT_USER:$CURRENT_USER" "${REMOVEABLE_STORAGE_PATH}/data"
+    chown "$CURRENT_USER:$CURRENT_USER" "${REMOVEABLE_STORAGE_PATH}/data"
     ls -la "${REMOVEABLE_STORAGE_PATH}" | logger
 else
     logger "Error: Failed to mount HubLink USB drive (exit code: $MOUNT_STATUS)"
