@@ -53,11 +53,30 @@ logger "Current /media permissions: $(ls -ld /media)"
 chmod 755 /media
 logger "Updated /media permissions: $(ls -ld /media)"
 
+# Function to debug mount point usage
+debug_mount_point() {
+    local target="$1"
+    logger "Debugging mount point usage for $target:"
+    lsof "$target" 2>&1 | logger
+    fuser -v "$target" 2>&1 | logger
+    ps aux | grep "$target" | grep -v grep | logger
+}
+
 # Function to handle unmounting
 unmount_target() {
     local target="$1"
     local max_retries=3
     local retry=0
+    
+    # Debug initial state
+    debug_mount_point "$target"
+    
+    # First, try to stop Docker container if it's using the mount
+    if docker ps | grep -q hublink-gateway; then
+        logger "Stopping hublink-gateway Docker container"
+        docker stop hublink-gateway || true
+        sleep 2
+    fi
     
     while mountpoint -q "$target" && [ $retry -lt $max_retries ]; do
         logger "Attempt $((retry + 1)) to unmount $target"
@@ -74,8 +93,11 @@ unmount_target() {
             return 0
         fi
         
-        # If still mounted, try to find and kill processes using the mount
+        # If still mounted, try to find and kill processes more aggressively
         logger "Checking for processes using $target"
+        debug_mount_point "$target"
+        
+        # Kill all processes using the mount point
         fuser -km "$target" 2>/dev/null || true
         sleep 2
         
@@ -92,6 +114,8 @@ unmount_target() {
     
     if mountpoint -q "$target"; then
         logger "Failed to unmount $target after $max_retries attempts"
+        # Final debug information
+        debug_mount_point "$target"
         return 1
     fi
     return 0
