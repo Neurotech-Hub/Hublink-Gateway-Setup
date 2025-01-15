@@ -107,6 +107,10 @@ bash setup-usb.sh >> "$log_file" 2>&1
 echo "Setting up data sync..." | tee -a "$log_file"
 bash setup-sync.sh >> "$log_file" 2>&1
 
+# Make entrypoint script executable
+echo "Making entrypoint script executable..." | tee -a "$log_file"
+chmod +x docker-entrypoint.sh
+
 # Start the services
 echo "Starting HubLink Gateway..." | tee -a "$log_file"
 docker-compose up -d
