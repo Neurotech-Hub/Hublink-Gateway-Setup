@@ -7,8 +7,10 @@ services:
     stop_grace_period: 30s
     stop_signal: SIGTERM
     volumes:
-      - ${LOCAL_STORAGE_PATH}/data:/data:z,sync
-      - ${REMOVEABLE_STORAGE_PATH}:/media:z,sync
+      - ${LOCAL_STORAGE_PATH}/data:/data:z
+      - /dev:/dev:ro
+      - /run/udev:/run/udev:ro
+      - /media:/media:rshared
       - /var/run/dbus:/var/run/dbus
       - /var/run/bluetooth:/var/run/bluetooth
     environment:
