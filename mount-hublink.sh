@@ -6,6 +6,11 @@ set -x
 # Log all commands to syslog
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 
+# Log script execution context
+logger "Script running as user: $(whoami)"
+logger "Script effective user ID: $(id -u)"
+logger "Script effective group ID: $(id -g)"
+
 # Get the device name from parameter
 DEVNAME="/dev/$1"
 
@@ -32,23 +37,40 @@ fi
 
 logger "Using mount point: ${REMOVEABLE_STORAGE_PATH}"
 
+# Check current mounts
+logger "Current mounts:"
+mount | grep "${REMOVEABLE_STORAGE_PATH}" || true
+
 # Ensure parent directories exist and have correct permissions
 logger "Setting up mount path permissions..."
+logger "Current /media permissions: $(ls -ld /media)"
 chmod 755 /media
+logger "Updated /media permissions: $(ls -ld /media)"
 
-# Only clean up our specific mount point
+# Unmount any existing mounts more forcefully
 if mountpoint -q "${REMOVEABLE_STORAGE_PATH}"; then
     logger "Unmounting existing mount point"
-    umount "${REMOVEABLE_STORAGE_PATH}" || true
+    umount -f "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
+    sleep 1
+    if mountpoint -q "${REMOVEABLE_STORAGE_PATH}"; then
+        logger "Force unmount failed, trying lazy unmount"
+        umount -l "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
+        sleep 2
+    fi
 fi
 
-# Only remove our specific directory
-rm -rf "${REMOVEABLE_STORAGE_PATH}"
+# Only remove our specific directory if it exists
+if [ -d "${REMOVEABLE_STORAGE_PATH}" ]; then
+    logger "Removing existing mount point directory"
+    rm -rf "${REMOVEABLE_STORAGE_PATH}"
+fi
 
 # Create fresh mount point with proper permissions
+logger "Creating new mount point"
 mkdir -p "${REMOVEABLE_STORAGE_PATH}"
 chmod 777 "${REMOVEABLE_STORAGE_PATH}"
 chown hublink:hublink "${REMOVEABLE_STORAGE_PATH}"
+logger "Mount point created with permissions: $(ls -ld ${REMOVEABLE_STORAGE_PATH})"
 
 # Get detailed device information
 logger "Device details:"
@@ -64,10 +86,6 @@ fi
 # Check and fix filesystem if needed
 logger "Checking filesystem..."
 fsck.vfat -a "$DEVNAME" 2>&1 | logger
-
-# Ensure FAT32 support is installed
-logger "Installing FAT32 support"
-apt-get install -y dosfstools
 
 # Get current user (ensure we use hublink user)
 CURRENT_USER="hublink"
@@ -87,7 +105,7 @@ MOUNT_OPTS="rw,uid=$CURRENT_UID,gid=$CURRENT_GID,umask=000,dmask=000,fmask=000"
 logger "Attempting mount with command: /bin/mount -t vfat -o $MOUNT_OPTS $DEVNAME ${REMOVEABLE_STORAGE_PATH}"
 
 # Try mounting with vfat filesystem type
-/bin/mount -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
+/bin/mount -v -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
 MOUNT_STATUS=${PIPESTATUS[0]}
 
 if [ $MOUNT_STATUS -eq 0 ]; then
@@ -101,13 +119,18 @@ else
     logger "Error: Failed to mount HubLink USB drive (exit code: $MOUNT_STATUS)"
     logger "Mount error details:"
     dmesg | tail -n 10 | logger
+    logger "Current mounts:"
     mount | logger
+    logger "Directory permissions:"
+    ls -ld "${REMOVEABLE_STORAGE_PATH}" | logger
+    ls -ld /media | logger
     exit 1
 fi
 
 # Verify mount
 if mountpoint -q "${REMOVEABLE_STORAGE_PATH}"; then
     logger "Mount point verified at ${REMOVEABLE_STORAGE_PATH}"
+    logger "Mount details: $(mount | grep ${REMOVEABLE_STORAGE_PATH})"
 else
     logger "Error: Mount point verification failed"
     exit 1
