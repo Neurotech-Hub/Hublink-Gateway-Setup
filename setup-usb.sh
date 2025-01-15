@@ -15,28 +15,38 @@ echo "Starting USB setup..."
 apt-get update
 apt-get install -y udev util-linux
 
-# Disable desktop automount
-echo "Disabling desktop automount..."
-if [ -n "$SUDO_USER" ]; then
-    # Disable automount in PCManFM
-    su - $SUDO_USER -c 'mkdir -p ~/.config/pcmanfm/LXDE-pi'
-    su - $SUDO_USER -c 'cat > ~/.config/pcmanfm/LXDE-pi/pcmanfm.conf << EOL
+# Aggressively disable all automounting
+echo "Disabling all automounting services..."
+
+# Stop and disable udisks2
+systemctl stop udisks2.service
+systemctl disable udisks2.service
+apt-get remove -y udisks2
+
+# Disable automount for all users
+mkdir -p /etc/pcmanfm/LXDE-pi/
+cat > /etc/pcmanfm/LXDE-pi/pcmanfm.conf << EOL
+[config]
+autorun=0
+
 [volume]
 mount_on_startup=0
 mount_removable=0
 autorun=0
-EOL'
-
-    # Disable udisks2 automount
-    mkdir -p /etc/udisks2
-    cat > /etc/udisks2/mount_options.conf << EOL
-[defaults]
-automount=false
-automount-open=false
 EOL
+
+# Also set for current user
+if [ -n "$SUDO_USER" ]; then
+    su - $SUDO_USER -c 'mkdir -p ~/.config/pcmanfm/LXDE-pi'
+    cp /etc/pcmanfm/LXDE-pi/pcmanfm.conf /home/$SUDO_USER/.config/pcmanfm/LXDE-pi/
+    chown $SUDO_USER:$SUDO_USER /home/$SUDO_USER/.config/pcmanfm/LXDE-pi/pcmanfm.conf
 fi
 
-# Copy udev rule
+# Disable udev rules for automounting
+rm -f /etc/udev/rules.d/*automount.rules
+rm -f /lib/udev/rules.d/*automount.rules
+
+# Copy our udev rule
 echo "Installing udev rule..."
 cp 99-hublink-usb.rules /etc/udev/rules.d/
 chmod 644 /etc/udev/rules.d/99-hublink-usb.rules
@@ -79,4 +89,5 @@ blkid
 
 echo "USB automount setup complete"
 echo "To test: Insert a USB drive labeled 'HUBLINK'"
-echo "Then check: journalctl -f | grep 'HubLink USB'" 
+echo "Then check: journalctl -f | grep 'HubLink USB'"
+echo "NOTE: A system reboot may be required for all changes to take effect" 
