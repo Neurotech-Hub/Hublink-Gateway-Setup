@@ -51,21 +51,28 @@ fi
 logger "Installing FAT32 support"
 apt-get install -y dosfstools
 
+# Get current user (from sudo environment if available)
+CURRENT_USER=${SUDO_USER:-$(whoami)}
+CURRENT_UID=$(id -u "$CURRENT_USER")
+CURRENT_GID=$(id -g "$CURRENT_USER")
+
+logger "Using user $CURRENT_USER (UID:$CURRENT_UID GID:$CURRENT_GID) for mount"
+
 # Set mount options specifically for FAT32
-MOUNT_OPTS="rw,users,uid=$(id -u pi),gid=$(id -g pi)"
+MOUNT_OPTS="rw,users,uid=$CURRENT_UID,gid=$CURRENT_GID,umask=000"
 
 logger "Attempting mount with command: mount -t vfat -o $MOUNT_OPTS $DEVNAME ${REMOVEABLE_STORAGE_PATH}"
 
 # Try mounting with vfat filesystem type
 mount -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
-MOUNT_STATUS=$?
+MOUNT_STATUS=${PIPESTATUS[0]}
 
 if [ $MOUNT_STATUS -eq 0 ]; then
     logger "HubLink USB drive mounted successfully at ${REMOVEABLE_STORAGE_PATH}"
     # Create data directory if it doesn't exist
     mkdir -p "${REMOVEABLE_STORAGE_PATH}/data"
     chmod 777 "${REMOVEABLE_STORAGE_PATH}/data"
-    chown -R pi:pi "${REMOVEABLE_STORAGE_PATH}/data"
+    chown -R "$CURRENT_USER:$CURRENT_USER" "${REMOVEABLE_STORAGE_PATH}/data"
     ls -la "${REMOVEABLE_STORAGE_PATH}" | logger
 else
     logger "Error: Failed to mount HubLink USB drive (exit code: $MOUNT_STATUS)"
