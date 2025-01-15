@@ -6,8 +6,6 @@ services:
     network_mode: host
     stop_grace_period: 30s
     stop_signal: SIGTERM
-    entrypoint: ["/usr/local/bin/docker-entrypoint.sh"]
-    command: ["python3", "app.py", "--start", "--interval", "30"]
     volumes:
       - ${LOCAL_STORAGE_PATH}/data:/data:z
       - /dev:/dev:ro
@@ -15,7 +13,6 @@ services:
       - /media:/media:rshared
       - /var/run/dbus:/var/run/dbus
       - /var/run/bluetooth:/var/run/bluetooth
-      - ./docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh:ro
     environment:
       - LOCAL_STORAGE_PATH=${LOCAL_STORAGE_PATH}
       - REMOVEABLE_STORAGE_PATH=${REMOVEABLE_STORAGE_PATH}
