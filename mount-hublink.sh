@@ -52,12 +52,12 @@ logger "Installing FAT32 support"
 apt-get install -y dosfstools
 
 # Set mount options specifically for FAT32
-MOUNT_OPTS="defaults,rw,users,umask=000"
+MOUNT_OPTS="rw,users,uid=$(id -u pi),gid=$(id -g pi)"
 
 logger "Attempting mount with command: mount -t vfat -o $MOUNT_OPTS $DEVNAME ${REMOVEABLE_STORAGE_PATH}"
 
 # Try mounting with vfat filesystem type
-mount -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}"
+mount -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
 MOUNT_STATUS=$?
 
 if [ $MOUNT_STATUS -eq 0 ]; then
@@ -70,8 +70,16 @@ if [ $MOUNT_STATUS -eq 0 ]; then
 else
     logger "Error: Failed to mount HubLink USB drive (exit code: $MOUNT_STATUS)"
     logger "Mount error details:"
-    dmesg | tail -n 10
-    mount
+    dmesg | tail -n 10 | logger
+    mount | logger
+    
+    # Try mounting with no options as a test
+    logger "Attempting fallback mount with no options..."
+    mount "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
+    
+    # If still failed, check filesystem
+    logger "Checking filesystem..."
+    fsck.vfat -n "$DEVNAME" 2>&1 | logger
     exit 1
 fi
 
