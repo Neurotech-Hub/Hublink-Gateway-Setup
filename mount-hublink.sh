@@ -35,10 +35,18 @@ logger "Using mount point: ${REMOVEABLE_STORAGE_PATH}"
 # Ensure parent directories exist and have correct permissions
 logger "Setting up mount path permissions..."
 chmod 755 /media
+
+# Clean up and prepare mount point
+if mountpoint -q "${REMOVEABLE_STORAGE_PATH}"; then
+    logger "Unmounting existing mount point"
+    umount "${REMOVEABLE_STORAGE_PATH}" || true
+fi
+
+# Remove and recreate mount point with proper permissions
+rm -rf "${REMOVEABLE_STORAGE_PATH}"
 mkdir -p "${REMOVEABLE_STORAGE_PATH}"
-chmod -R 777 "${REMOVEABLE_STORAGE_PATH}"
+chmod 777 "${REMOVEABLE_STORAGE_PATH}"
 chown root:root "${REMOVEABLE_STORAGE_PATH}"
-rm -rf "${REMOVEABLE_STORAGE_PATH:?}"/*
 
 # Get detailed device information
 logger "Device details:"
