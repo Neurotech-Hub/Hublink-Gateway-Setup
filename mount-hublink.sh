@@ -34,21 +34,21 @@ logger "Using mount point: ${REMOVEABLE_STORAGE_PATH}"
 
 # Ensure parent directories exist and have correct permissions
 logger "Setting up mount path permissions..."
-chmod 755 /media
+sudo chmod 755 /media
 
 # Only clean up our specific mount point
 if mountpoint -q "${REMOVEABLE_STORAGE_PATH}"; then
     logger "Unmounting existing mount point"
-    umount "${REMOVEABLE_STORAGE_PATH}" || true
+    sudo umount "${REMOVEABLE_STORAGE_PATH}" || true
 fi
 
 # Only remove our specific directory
-rm -rf "${REMOVEABLE_STORAGE_PATH}"
+sudo rm -rf "${REMOVEABLE_STORAGE_PATH}"
 
 # Create fresh mount point with proper permissions
-mkdir -p "${REMOVEABLE_STORAGE_PATH}"
-chmod 777 "${REMOVEABLE_STORAGE_PATH}"
-chown hublink:hublink "${REMOVEABLE_STORAGE_PATH}"
+sudo mkdir -p "${REMOVEABLE_STORAGE_PATH}"
+sudo chmod 777 "${REMOVEABLE_STORAGE_PATH}"
+sudo chown hublink:hublink "${REMOVEABLE_STORAGE_PATH}"
 
 # Get detailed device information
 logger "Device details:"
@@ -84,18 +84,18 @@ logger "Using user $CURRENT_USER (UID:$CURRENT_UID GID:$CURRENT_GID) for mount"
 # Set mount options specifically for FAT32
 MOUNT_OPTS="rw,users,uid=$CURRENT_UID,gid=$CURRENT_GID,umask=000,dmask=000,fmask=000"
 
-logger "Attempting mount with command: /bin/mount -t vfat -o $MOUNT_OPTS $DEVNAME ${REMOVEABLE_STORAGE_PATH}"
+logger "Attempting mount with command: sudo /bin/mount -t vfat -o $MOUNT_OPTS $DEVNAME ${REMOVEABLE_STORAGE_PATH}"
 
 # Try mounting with vfat filesystem type
-/bin/mount -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
+sudo /bin/mount -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
 MOUNT_STATUS=${PIPESTATUS[0]}
 
 if [ $MOUNT_STATUS -eq 0 ]; then
     logger "HubLink USB drive mounted successfully at ${REMOVEABLE_STORAGE_PATH}"
     # Create data directory if it doesn't exist
-    mkdir -p "${REMOVEABLE_STORAGE_PATH}/data"
-    chmod 777 "${REMOVEABLE_STORAGE_PATH}/data"
-    chown "$CURRENT_USER:$CURRENT_USER" "${REMOVEABLE_STORAGE_PATH}/data"
+    sudo mkdir -p "${REMOVEABLE_STORAGE_PATH}/data"
+    sudo chmod 777 "${REMOVEABLE_STORAGE_PATH}/data"
+    sudo chown "$CURRENT_USER:$CURRENT_USER" "${REMOVEABLE_STORAGE_PATH}/data"
     ls -la "${REMOVEABLE_STORAGE_PATH}" | logger
 else
     logger "Error: Failed to mount HubLink USB drive (exit code: $MOUNT_STATUS)"
