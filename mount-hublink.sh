@@ -67,8 +67,8 @@ fsck.vfat -a "$DEVNAME" 2>&1 | logger
 logger "Installing FAT32 support"
 apt-get install -y dosfstools
 
-# Get current user (from sudo environment if available)
-CURRENT_USER=${SUDO_USER:-hublink}
+# Get current user (ensure we use hublink user)
+CURRENT_USER="hublink"
 CURRENT_UID=$(id -u "$CURRENT_USER")
 CURRENT_GID=$(id -g "$CURRENT_USER")
 
@@ -77,10 +77,10 @@ logger "Using user $CURRENT_USER (UID:$CURRENT_UID GID:$CURRENT_GID) for mount"
 # Set mount options specifically for FAT32
 MOUNT_OPTS="rw,uid=$CURRENT_UID,gid=$CURRENT_GID,umask=000,dmask=000,fmask=000"
 
-logger "Attempting mount with command: sudo mount -t vfat -o $MOUNT_OPTS $DEVNAME ${REMOVEABLE_STORAGE_PATH}"
+logger "Attempting mount with command: mount -t vfat -o $MOUNT_OPTS $DEVNAME ${REMOVEABLE_STORAGE_PATH}"
 
 # Try mounting with vfat filesystem type
-sudo mount -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
+mount -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
 MOUNT_STATUS=${PIPESTATUS[0]}
 
 if [ $MOUNT_STATUS -eq 0 ]; then
