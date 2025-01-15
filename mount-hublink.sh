@@ -34,6 +34,7 @@ logger "Using mount point: ${REMOVEABLE_STORAGE_PATH}"
 
 # Ensure mount point exists and is empty
 mkdir -p "${REMOVEABLE_STORAGE_PATH}"
+chmod 777 "${REMOVEABLE_STORAGE_PATH}"
 rm -rf "${REMOVEABLE_STORAGE_PATH:?}"/*
 
 # Get detailed device information
@@ -47,19 +48,23 @@ if [ ! -b "$DEVNAME" ]; then
     exit 1
 fi
 
+# Check and fix filesystem if needed
+logger "Checking filesystem..."
+fsck.vfat -a "$DEVNAME" 2>&1 | logger
+
 # Ensure FAT32 support is installed
 logger "Installing FAT32 support"
 apt-get install -y dosfstools
 
 # Get current user (from sudo environment if available)
-CURRENT_USER=${SUDO_USER:-$(whoami)}
+CURRENT_USER=${SUDO_USER:-hublink}
 CURRENT_UID=$(id -u "$CURRENT_USER")
 CURRENT_GID=$(id -g "$CURRENT_USER")
 
 logger "Using user $CURRENT_USER (UID:$CURRENT_UID GID:$CURRENT_GID) for mount"
 
 # Set mount options specifically for FAT32
-MOUNT_OPTS="rw,users,uid=$CURRENT_UID,gid=$CURRENT_GID,umask=000"
+MOUNT_OPTS="rw,uid=$CURRENT_UID,gid=$CURRENT_GID,umask=000,dmask=000,fmask=000"
 
 logger "Attempting mount with command: mount -t vfat -o $MOUNT_OPTS $DEVNAME ${REMOVEABLE_STORAGE_PATH}"
 
@@ -79,14 +84,6 @@ else
     logger "Mount error details:"
     dmesg | tail -n 10 | logger
     mount | logger
-    
-    # Try mounting with no options as a test
-    logger "Attempting fallback mount with no options..."
-    mount "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
-    
-    # If still failed, check filesystem
-    logger "Checking filesystem..."
-    fsck.vfat -n "$DEVNAME" 2>&1 | logger
     exit 1
 fi
 
