@@ -18,10 +18,15 @@ apt-get install -y udev util-linux
 # Aggressively disable all automounting
 echo "Disabling all automounting services..."
 
-# Stop and disable udisks2
-systemctl stop udisks2.service
-systemctl disable udisks2.service
-apt-get remove -y udisks2
+# Only try to remove udisks2 if it exists
+if dpkg -l | grep -q udisks2; then
+    echo "Removing udisks2..."
+    systemctl stop udisks2.service || true
+    systemctl disable udisks2.service || true
+    apt-get remove -y udisks2
+else
+    echo "udisks2 not installed, skipping removal"
+fi
 
 # Disable automount for all users
 mkdir -p /etc/pcmanfm/LXDE-pi/

@@ -33,38 +33,23 @@ logger "Device details:"
 blkid "$DEVNAME" | logger
 lsblk -f "$DEVNAME" | logger
 
-# Get filesystem type
-FS_TYPE=$(lsblk -no FSTYPE "$DEVNAME")
-logger "Detected filesystem type: $FS_TYPE"
+# Ensure FAT32 support is installed
+apt-get install -y dosfstools
 
-# Install filesystem support if needed
-if [ "$FS_TYPE" = "vfat" ]; then
-    apt-get install -y dosfstools
-elif [ "$FS_TYPE" = "exfat" ]; then
-    apt-get install -y exfat-fuse exfat-utils
-elif [ "$FS_TYPE" = "ntfs" ]; then
-    apt-get install -y ntfs-3g
-fi
-
-# Set mount options based on filesystem
-MOUNT_OPTS="rw,sync,user"
-if [ "$FS_TYPE" = "vfat" ] || [ "$FS_TYPE" = "exfat" ]; then
-    MOUNT_OPTS="$MOUNT_OPTS,umask=000,dmask=000,fmask=000"
-elif [ "$FS_TYPE" = "ntfs" ]; then
-    MOUNT_OPTS="$MOUNT_OPTS,umask=000,dmask=000,fmask=000,uid=$(id -u $SUDO_USER),gid=$(id -g $SUDO_USER)"
-fi
+# Set mount options specifically for FAT32
+MOUNT_OPTS="rw,sync,user,uid=$(id -u $SUDO_USER),gid=$(id -g $SUDO_USER),umask=000"
 
 logger "Attempting mount with options: $MOUNT_OPTS"
 
-# Try mounting with explicit filesystem type and options
-mount -t "$FS_TYPE" -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}"
+# Try mounting with vfat filesystem type
+mount -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}"
 MOUNT_STATUS=$?
 
 if [ $MOUNT_STATUS -eq 0 ]; then
     logger "HubLink USB drive mounted successfully at ${REMOVEABLE_STORAGE_PATH}"
-    # Set permissions
-    chmod -R 777 "${REMOVEABLE_STORAGE_PATH}"
-    chown -R $SUDO_USER:$SUDO_USER "${REMOVEABLE_STORAGE_PATH}"
+    # Create data directory if it doesn't exist
+    mkdir -p "${REMOVEABLE_STORAGE_PATH}/data"
+    chmod 777 "${REMOVEABLE_STORAGE_PATH}/data"
 else
     logger "Error: Failed to mount HubLink USB drive (exit code: $MOUNT_STATUS)"
     logger "Mount error details:"
@@ -80,10 +65,6 @@ else
     logger "Error: Mount point verification failed"
     exit 1
 fi
-
-# Create data directory if it doesn't exist
-mkdir -p "${REMOVEABLE_STORAGE_PATH}/data"
-chmod 777 "${REMOVEABLE_STORAGE_PATH}/data"
 
 # Notify the Docker container if needed
 docker kill --signal=SIGUSR1 hublink-gateway || true 
