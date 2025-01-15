@@ -5,7 +5,7 @@ SUBSYSTEM=="block", KERNEL=="sd[a-z]*", ACTION=="add", RUN+="/usr/bin/logger -t 
 SUBSYSTEM=="block", KERNEL=="sd[a-z]1", ACTION=="add", ENV{ID_FS_LABEL}=="HUBLINK", \
     MODE="0777", \
     OWNER="root", GROUP="root", \
-    RUN+="/bin/sh -c 'mkdir -p /media/hublink-usb && chmod 777 /media/hublink-usb && /usr/local/bin/mount-hublink.sh %k'"
+    RUN+="/bin/sh -c 'mkdir -p /media/hublink-usb && chmod 777 /media/hublink-usb && sudo /usr/local/bin/mount-hublink.sh %k'"
 
 # Handle removal of HUBLINK devices
 SUBSYSTEM=="block", KERNEL=="sd[a-z]1", ACTION=="remove", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/usr/local/bin/unmount-hublink.sh"
