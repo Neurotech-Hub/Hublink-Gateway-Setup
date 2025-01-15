@@ -12,47 +12,6 @@ fi
 # Log all commands to syslog
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 
-# Log script execution context
-logger "Script running as user: $(whoami)"
-logger "Script effective user ID: $(id -u)"
-logger "Script effective group ID: $(id -g)"
-
-# Get the device name from parameter
-DEVNAME="/dev/$1"
-
-if [ -z "$1" ]; then
-    logger "Error: No device name provided"
-    exit 1
-fi
-
-logger "Starting mount process for device: $DEVNAME"
-
-# Wait for device to be fully ready
-sleep 2
-
-# Source environment variables
-if [ -f /opt/hublink/.env ]; then
-    logger "Loading environment from /opt/hublink/.env"
-    set -a
-    source /opt/hublink/.env
-    set +a
-else
-    logger "Warning: /opt/hublink/.env not found, using default paths"
-    REMOVEABLE_STORAGE_PATH="/media/hublink-usb"
-fi
-
-logger "Using mount point: ${REMOVEABLE_STORAGE_PATH}"
-
-# Check current mounts
-logger "Current mounts:"
-mount | grep "${REMOVEABLE_STORAGE_PATH}" || true
-
-# Ensure parent directories exist and have correct permissions
-logger "Setting up mount path permissions..."
-logger "Current /media permissions: $(ls -ld /media)"
-chmod 755 /media
-logger "Updated /media permissions: $(ls -ld /media)"
-
 # Function to debug mount point usage
 debug_mount_point() {
     local target="$1"
@@ -76,6 +35,21 @@ unmount_target() {
         logger "Stopping hublink-gateway Docker container"
         docker stop hublink-gateway || true
         sleep 2
+    fi
+
+    # Check what's currently mounted here
+    local current_mount
+    current_mount=$(mount | grep "${target}" | awk '{print $1}')
+    
+    if [ -n "$current_mount" ]; then
+        logger "Found existing mount: $current_mount at $target"
+        
+        # Try direct unmount of the device
+        if umount "$current_mount" 2>/dev/null; then
+            logger "Successfully unmounted $current_mount"
+            sleep 1
+            return 0
+        fi
     fi
     
     while mountpoint -q "$target" && [ $retry -lt $max_retries ]; do
@@ -120,6 +94,42 @@ unmount_target() {
     fi
     return 0
 }
+
+# Get the device name from parameter
+DEVNAME="/dev/$1"
+
+if [ -z "$1" ]; then
+    logger "Error: No device name provided"
+    exit 1
+fi
+
+logger "Starting mount process for device: $DEVNAME"
+
+# Wait for device to be fully ready
+sleep 2
+
+# Source environment variables
+if [ -f /opt/hublink/.env ]; then
+    logger "Loading environment from /opt/hublink/.env"
+    set -a
+    source /opt/hublink/.env
+    set +a
+else
+    logger "Warning: /opt/hublink/.env not found, using default paths"
+    REMOVEABLE_STORAGE_PATH="/media/hublink-usb"
+fi
+
+logger "Using mount point: ${REMOVEABLE_STORAGE_PATH}"
+
+# Check current mounts
+logger "Current mounts:"
+mount | grep "${REMOVEABLE_STORAGE_PATH}" || true
+
+# Ensure parent directories exist and have correct permissions
+logger "Setting up mount path permissions..."
+logger "Current /media permissions: $(ls -ld /media)"
+chmod 755 /media
+logger "Updated /media permissions: $(ls -ld /media)"
 
 # Clean up existing mount point
 if [ -d "${REMOVEABLE_STORAGE_PATH}" ]; then
