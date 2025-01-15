@@ -15,6 +15,27 @@ echo "Starting USB setup..."
 apt-get update
 apt-get install -y udev util-linux
 
+# Disable desktop automount
+echo "Disabling desktop automount..."
+if [ -n "$SUDO_USER" ]; then
+    # Disable automount in PCManFM
+    su - $SUDO_USER -c 'mkdir -p ~/.config/pcmanfm/LXDE-pi'
+    su - $SUDO_USER -c 'cat > ~/.config/pcmanfm/LXDE-pi/pcmanfm.conf << EOL
+[volume]
+mount_on_startup=0
+mount_removable=0
+autorun=0
+EOL'
+
+    # Disable udisks2 automount
+    mkdir -p /etc/udisks2
+    cat > /etc/udisks2/mount_options.conf << EOL
+[defaults]
+automount=false
+automount-open=false
+EOL
+fi
+
 # Copy udev rule
 echo "Installing udev rule..."
 cp 99-hublink-usb.rules /etc/udev/rules.d/
