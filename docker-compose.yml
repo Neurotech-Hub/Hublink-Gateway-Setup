@@ -7,13 +7,12 @@ services:
     stop_grace_period: 30s
     stop_signal: SIGTERM
     volumes:
-      - ${DATA_DIRECTORY}:/data:z,sync
+      - ${LOCAL_STORAGE_PATH}/data:/data:z,sync
+      - ${REMOVEABLE_STORAGE_PATH}:/media:z,sync
       - /var/run/dbus:/var/run/dbus
       - /var/run/bluetooth:/var/run/bluetooth
     environment:
       - TZ=America/Chicago
-      - GATEWAY_NAME=${GATEWAY_NAME}
-      - SECRET_URL=${SECRET_URL}
       - DATA_DIRECTORY=/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/status"]

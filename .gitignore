@@ -1,11 +1,10 @@
-# Environment variables
-.env
-.env.*
-
 # Logs
 *.log
 logs/
 docker_install.log
+
+# Configuration files
+sync_config.json
 
 # System files - MacOS
 .DS_Store

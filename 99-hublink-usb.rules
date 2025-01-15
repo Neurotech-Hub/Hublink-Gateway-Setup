@@ -1,0 +1,2 @@
+ACTION=="add", SUBSYSTEM=="block", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/usr/local/bin/mount-hublink.sh"
+ACTION=="remove", SUBSYSTEM=="block", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/usr/local/bin/unmount-hublink.sh" 
