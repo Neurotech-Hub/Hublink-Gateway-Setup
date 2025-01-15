@@ -12,8 +12,8 @@ services:
       - /var/run/dbus:/var/run/dbus
       - /var/run/bluetooth:/var/run/bluetooth
     environment:
-      - TZ=America/Chicago
-      - DATA_DIRECTORY=/data
+      - LOCAL_STORAGE_PATH=${LOCAL_STORAGE_PATH}
+      - REMOVEABLE_STORAGE_PATH=${REMOVEABLE_STORAGE_PATH}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/status"]
       interval: 30s
