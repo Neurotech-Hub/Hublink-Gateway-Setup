@@ -36,17 +36,19 @@ logger "Using mount point: ${REMOVEABLE_STORAGE_PATH}"
 logger "Setting up mount path permissions..."
 chmod 755 /media
 
-# Clean up and prepare mount point
+# Only clean up our specific mount point
 if mountpoint -q "${REMOVEABLE_STORAGE_PATH}"; then
     logger "Unmounting existing mount point"
     umount "${REMOVEABLE_STORAGE_PATH}" || true
 fi
 
-# Remove and recreate mount point with proper permissions
+# Only remove our specific directory
 rm -rf "${REMOVEABLE_STORAGE_PATH}"
+
+# Create fresh mount point with proper permissions
 mkdir -p "${REMOVEABLE_STORAGE_PATH}"
 chmod 777 "${REMOVEABLE_STORAGE_PATH}"
-chown root:root "${REMOVEABLE_STORAGE_PATH}"
+chown hublink:hublink "${REMOVEABLE_STORAGE_PATH}"
 
 # Get detailed device information
 logger "Device details:"
@@ -69,6 +71,11 @@ apt-get install -y dosfstools
 
 # Get current user (ensure we use hublink user)
 CURRENT_USER="hublink"
+if ! id -u "$CURRENT_USER" >/dev/null 2>&1; then
+    logger "Error: hublink user does not exist"
+    exit 1
+fi
+
 CURRENT_UID=$(id -u "$CURRENT_USER")
 CURRENT_GID=$(id -g "$CURRENT_USER")
 
