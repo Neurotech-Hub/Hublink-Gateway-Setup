@@ -2,7 +2,7 @@
 
 # install.sh
 set -e  # Exit on error
-log_file="docker_install.log"
+log_file="install.log"
 
 echo "Starting Docker installation..." | tee -a "$log_file"
 

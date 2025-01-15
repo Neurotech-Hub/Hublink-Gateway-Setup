@@ -1,2 +1,9 @@
-ACTION=="add", SUBSYSTEM=="block", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/usr/local/bin/mount-hublink.sh"
-ACTION=="remove", SUBSYSTEM=="block", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/usr/local/bin/unmount-hublink.sh" 
+# Match USB storage devices with HUBLINK label
+SUBSYSTEM=="block", ACTION=="add", ENV{ID_FS_LABEL}=="HUBLINK", ENV{SYSTEMD_WANTS}="hublink-mount.service", RUN+="/usr/local/bin/mount-hublink.sh $env{DEVNAME}"
+
+# Handle removal of HUBLINK devices
+SUBSYSTEM=="block", ACTION=="remove", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/usr/local/bin/unmount-hublink.sh"
+
+# Add debug logging for all block devices
+SUBSYSTEM=="block", ACTION=="add", RUN+="/usr/bin/logger -t hublink-udev 'Device added: $env{DEVNAME} Label:$env{ID_FS_LABEL}'"
+SUBSYSTEM=="block", ACTION=="remove", RUN+="/usr/bin/logger -t hublink-udev 'Device removed: $env{DEVNAME}'" 
