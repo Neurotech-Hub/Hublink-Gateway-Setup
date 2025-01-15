@@ -179,14 +179,36 @@ CURRENT_GID=$(id -g "$CURRENT_USER")
 
 logger "Using user $CURRENT_USER (UID:$CURRENT_UID GID:$CURRENT_GID) for mount"
 
+# Before mounting, check for SELinux/AppArmor
+logger "Checking security context..."
+if command -v getenforce >/dev/null 2>&1; then
+    logger "SELinux status: $(getenforce)"
+    # If SELinux is enforcing, try to set the correct context
+    if [ "$(getenforce)" = "Enforcing" ]; then
+        chcon -R -t removable_t "${REMOVEABLE_STORAGE_PATH}" || true
+    fi
+fi
+
+if [ -d /sys/module/apparmor ]; then
+    logger "AppArmor status: $(aa-status 2>&1 || echo 'Unable to get AppArmor status')"
+fi
+
 # Set mount options specifically for FAT32
-MOUNT_OPTS="rw,uid=$CURRENT_UID,gid=$CURRENT_GID,umask=000,dmask=000,fmask=000"
+MOUNT_OPTS="rw,user,exec,uid=$CURRENT_UID,gid=$CURRENT_GID,umask=000,dmask=000,fmask=000"
 
 logger "Attempting mount with command: /bin/mount -t vfat -o $MOUNT_OPTS $DEVNAME ${REMOVEABLE_STORAGE_PATH}"
 
 # Try mounting with vfat filesystem type
 /bin/mount -v -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
 MOUNT_STATUS=${PIPESTATUS[0]}
+
+if [ $MOUNT_STATUS -ne 0 ]; then
+    # If first attempt fails, try without some options
+    logger "First mount attempt failed, trying with basic options..."
+    MOUNT_OPTS="defaults,user,rw,uid=$CURRENT_UID,gid=$CURRENT_GID"
+    /bin/mount -v -t vfat -o "$MOUNT_OPTS" "$DEVNAME" "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
+    MOUNT_STATUS=${PIPESTATUS[0]}
+fi
 
 if [ $MOUNT_STATUS -eq 0 ]; then
     logger "HubLink USB drive mounted successfully at ${REMOVEABLE_STORAGE_PATH}"
@@ -204,6 +226,11 @@ else
     logger "Directory permissions:"
     ls -ld "${REMOVEABLE_STORAGE_PATH}" | logger
     ls -ld /media | logger
+    # Additional debugging information
+    logger "Mount capabilities:"
+    getcap /bin/mount 2>&1 | logger
+    logger "Process capabilities:"
+    getpcaps $$ 2>&1 | logger
     exit 1
 fi
 
