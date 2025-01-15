@@ -14,8 +14,11 @@ fi
 
 # Setup hublink directory
 echo "Setting up HubLink directory..." | tee -a "$log_file"
-mkdir -p /opt/hublink
-cp -r . /opt/hublink/
+CURRENT_DIR=$(pwd)
+if [ "$CURRENT_DIR" != "/opt/hublink" ]; then
+    mkdir -p /opt/hublink
+    cp -r . /opt/hublink/
+fi
 cd /opt/hublink
 
 # Source environment variables
