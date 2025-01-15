@@ -3,6 +3,12 @@
 # Enable command logging
 set -x
 
+# Ensure we're running as root
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root" >&2
+    exit 1
+fi
+
 # Log all commands to syslog
 exec 1> >(logger -s -t $(basename $0)) 2>&1
 
@@ -47,22 +53,62 @@ logger "Current /media permissions: $(ls -ld /media)"
 chmod 755 /media
 logger "Updated /media permissions: $(ls -ld /media)"
 
-# Unmount any existing mounts more forcefully
-if mountpoint -q "${REMOVEABLE_STORAGE_PATH}"; then
-    logger "Unmounting existing mount point"
-    umount -f "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
-    sleep 1
-    if mountpoint -q "${REMOVEABLE_STORAGE_PATH}"; then
-        logger "Force unmount failed, trying lazy unmount"
-        umount -l "${REMOVEABLE_STORAGE_PATH}" 2>&1 | logger
+# Function to handle unmounting
+unmount_target() {
+    local target="$1"
+    local max_retries=3
+    local retry=0
+    
+    while mountpoint -q "$target" && [ $retry -lt $max_retries ]; do
+        logger "Attempt $((retry + 1)) to unmount $target"
+        
+        # First try a normal unmount
+        if umount "$target" 2>/dev/null; then
+            logger "Successfully unmounted $target"
+            return 0
+        fi
+        
+        # If that fails, try force unmount
+        if umount -f "$target" 2>/dev/null; then
+            logger "Successfully force unmounted $target"
+            return 0
+        fi
+        
+        # If still mounted, try to find and kill processes using the mount
+        logger "Checking for processes using $target"
+        fuser -km "$target" 2>/dev/null || true
         sleep 2
+        
+        # Last resort: lazy unmount
+        if umount -l "$target" 2>/dev/null; then
+            logger "Successfully lazy unmounted $target"
+            sleep 2
+            return 0
+        fi
+        
+        retry=$((retry + 1))
+        sleep 1
+    done
+    
+    if mountpoint -q "$target"; then
+        logger "Failed to unmount $target after $max_retries attempts"
+        return 1
     fi
-fi
+    return 0
+}
 
-# Only remove our specific directory if it exists
+# Clean up existing mount point
 if [ -d "${REMOVEABLE_STORAGE_PATH}" ]; then
-    logger "Removing existing mount point directory"
-    rm -rf "${REMOVEABLE_STORAGE_PATH}"
+    logger "Attempting to unmount and clean up existing mount point"
+    unmount_target "${REMOVEABLE_STORAGE_PATH}"
+    
+    # Only try to remove if unmount was successful
+    if ! mountpoint -q "${REMOVEABLE_STORAGE_PATH}"; then
+        rm -rf "${REMOVEABLE_STORAGE_PATH}"
+    else
+        logger "Error: Mount point still busy after unmount attempts"
+        exit 1
+    fi
 fi
 
 # Create fresh mount point with proper permissions
