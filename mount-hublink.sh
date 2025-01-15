@@ -4,12 +4,15 @@
 set -x
 
 # Get the device name from parameter
-DEVNAME="$1"
+DEVNAME="/dev/$1"
 
-if [ -z "$DEVNAME" ]; then
+if [ -z "$1" ]; then
     logger "Error: No device name provided"
     exit 1
 fi
+
+# Wait for device to be fully ready
+sleep 2
 
 # Source environment variables
 if [ -f /opt/hublink/.env ]; then
@@ -37,7 +40,7 @@ lsblk -f "$DEVNAME" | logger
 apt-get install -y dosfstools
 
 # Set mount options specifically for FAT32
-MOUNT_OPTS="rw,sync,user,uid=$(id -u $SUDO_USER),gid=$(id -g $SUDO_USER),umask=000"
+MOUNT_OPTS="defaults,rw,users,umask=000"
 
 logger "Attempting mount with options: $MOUNT_OPTS"
 
@@ -50,6 +53,7 @@ if [ $MOUNT_STATUS -eq 0 ]; then
     # Create data directory if it doesn't exist
     mkdir -p "${REMOVEABLE_STORAGE_PATH}/data"
     chmod 777 "${REMOVEABLE_STORAGE_PATH}/data"
+    chown -R pi:pi "${REMOVEABLE_STORAGE_PATH}/data"
 else
     logger "Error: Failed to mount HubLink USB drive (exit code: $MOUNT_STATUS)"
     logger "Mount error details:"
