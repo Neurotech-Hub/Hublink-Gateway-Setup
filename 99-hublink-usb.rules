@@ -2,7 +2,10 @@
 SUBSYSTEM=="block", KERNEL=="sd[a-z]*", ACTION=="add", RUN+="/usr/bin/logger -t hublink-udev 'USB Device Added - Kernel: %k, Name: %n, Number: %n, Label: $env{ID_FS_LABEL}, Type: $env{ID_FS_TYPE}'"
 
 # Match USB storage partitions with HUBLINK label
-SUBSYSTEM=="block", KERNEL=="sd[a-z]1", ACTION=="add", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/usr/local/bin/mount-hublink.sh %k"
+SUBSYSTEM=="block", KERNEL=="sd[a-z]1", ACTION=="add", ENV{ID_FS_LABEL}=="HUBLINK", \
+    MODE="0777", \
+    OWNER="root", GROUP="root", \
+    RUN+="/bin/sh -c 'mkdir -p /media/hublink-usb && chmod 777 /media/hublink-usb && /usr/local/bin/mount-hublink.sh %k'"
 
 # Handle removal of HUBLINK devices
 SUBSYSTEM=="block", KERNEL=="sd[a-z]1", ACTION=="remove", ENV{ID_FS_LABEL}=="HUBLINK", RUN+="/usr/local/bin/unmount-hublink.sh"
