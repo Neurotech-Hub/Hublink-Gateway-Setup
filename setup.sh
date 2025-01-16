@@ -14,15 +14,22 @@ echo "Starting HubLink Gateway installation..." | tee -a "$log_file"
 # Stop any existing containers first
 if command -v docker &> /dev/null && systemctl is-active --quiet docker; then
     echo "Stopping existing Docker containers..." | tee -a "$log_file"
+    
+    # First move out of /opt/hublink in case we're in it
+    cd /
+
     if [ -f "/opt/hublink/docker-compose.yml" ]; then
-        cd /opt/hublink && docker-compose down || true
+        echo "Stopping via docker-compose..." | tee -a "$log_file"
+        (cd /opt/hublink && docker-compose down) || echo "docker-compose down failed, continuing..." | tee -a "$log_file"
     fi
-    # Fallback: Stop any containers with our name pattern
-    docker ps -q --filter "name=hublink" | xargs -r docker stop || true
+    
+    echo "Checking for remaining hublink containers..." | tee -a "$log_file"
+    docker ps -q --filter "name=hublink" | xargs -r docker stop || echo "No remaining containers to stop" | tee -a "$log_file"
 fi
 
 # Remove existing directory completely and recreate fresh
 echo "Preparing installation directory..." | tee -a "$log_file"
+cd /
 rm -rf /opt/hublink
 mkdir -p /opt/hublink
 cd /opt/hublink
