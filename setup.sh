@@ -32,13 +32,16 @@ echo "Preparing installation directory..." | tee -a "$log_file"
 cd /
 rm -rf /opt/hublink
 mkdir -p /opt/hublink
-cd /opt/hublink
+cd /opt/hublink || exit 1
 
-# Clone the repository if not already present
-if [ ! -d ".git" ]; then
-    echo "Downloading HubLink Gateway Setup..." | tee -a "$log_file"
-    git clone https://github.com/Neurotech-Hub/Hublink-Gateway-Setup.git .
+# Clone the repository with more verbose output
+echo "Downloading HubLink Gateway Setup..." | tee -a "$log_file"
+echo "Cloning from https://github.com/Neurotech-Hub/Hublink-Gateway-Setup.git" | tee -a "$log_file"
+if ! git clone https://github.com/Neurotech-Hub/Hublink-Gateway-Setup.git .; then
+    echo "Git clone failed! Error code: $?" | tee -a "$log_file"
+    exit 1
 fi
+echo "Repository cloned successfully" | tee -a "$log_file"
 
 # Create default .env file if it doesn't exist
 if [ ! -f .env ]; then
