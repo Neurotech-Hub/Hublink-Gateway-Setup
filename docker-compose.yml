@@ -8,7 +8,6 @@ services:
     stop_signal: SIGTERM
     volumes:
       - ${LOCAL_STORAGE_PATH}:${LOCAL_STORAGE_PATH}
-      - /media/${USER}/HUBLINK:/media:rw
       - /dev:/dev:ro
       - /run/udev:/run/udev:ro
       - /media:/media:rshared
@@ -16,7 +15,7 @@ services:
       - /var/run/bluetooth:/var/run/bluetooth
     environment:
       - LOCAL_STORAGE_PATH=${LOCAL_STORAGE_PATH}
-      - MEDIA_STORAGE_PATH=/media
+      - MEDIA_STORAGE_PATH=/media/${USER}/HUBLINK
       - ENVIRONMENT=prod
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/status"]
