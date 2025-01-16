@@ -11,7 +11,7 @@ fi
 
 echo "Starting HubLink Gateway installation..." | tee -a "$log_file"
 
-# Check and stop existing containers
+# Stop any existing containers first
 if command -v docker &> /dev/null && systemctl is-active --quiet docker; then
     echo "Stopping existing Docker containers..." | tee -a "$log_file"
     if [ -f "/opt/hublink/docker-compose.yml" ]; then
@@ -21,7 +21,9 @@ if command -v docker &> /dev/null && systemctl is-active --quiet docker; then
     docker ps -q --filter "name=hublink" | xargs -r docker stop || true
 fi
 
-# Create and move to installation directory
+# Remove existing directory completely and recreate fresh
+echo "Preparing installation directory..." | tee -a "$log_file"
+rm -rf /opt/hublink
 mkdir -p /opt/hublink
 cd /opt/hublink
 
