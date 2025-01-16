@@ -36,11 +36,14 @@ cd /opt/hublink || exit 1
 
 # Clone the repository with more verbose output
 echo "Downloading HubLink Gateway Setup..." | tee -a "$log_file"
-echo "Cloning from https://github.com/Neurotech-Hub/Hublink-Gateway-Setup.git" | tee -a "$log_file"
-if ! git clone https://github.com/Neurotech-Hub/Hublink-Gateway-Setup.git .; then
-    echo "Git clone failed! Error code: $?" | tee -a "$log_file"
+cd /
+rm -rf /opt/hublink
+git clone https://github.com/Neurotech-Hub/Hublink-Gateway-Setup.git /opt/hublink 2>> "$log_file" || {
+    echo "Git clone failed! See $log_file for details" | tee -a "$log_file"
+    cat "$log_file"
     exit 1
-fi
+}
+cd /opt/hublink || exit 1
 echo "Repository cloned successfully" | tee -a "$log_file"
 
 # Create default .env file if it doesn't exist
