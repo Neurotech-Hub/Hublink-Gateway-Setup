@@ -11,6 +11,16 @@ fi
 
 echo "Starting HubLink Gateway installation..." | tee -a "$log_file"
 
+# Check and stop existing containers
+if command -v docker &> /dev/null && systemctl is-active --quiet docker; then
+    echo "Stopping existing Docker containers..." | tee -a "$log_file"
+    if [ -f "/opt/hublink/docker-compose.yml" ]; then
+        cd /opt/hublink && docker-compose down || true
+    fi
+    # Fallback: Stop any containers with our name pattern
+    docker ps -q --filter "name=hublink" | xargs -r docker stop || true
+fi
+
 # Create and move to installation directory
 mkdir -p /opt/hublink
 cd /opt/hublink
@@ -28,24 +38,32 @@ if [ ! -f .env ]; then
     echo "USER=$(logname)" >> .env
 fi
 
-# Install Docker
-echo "Installing Docker..." | tee -a "$log_file"
-curl -sSL https://get.docker.com | sh >> "$log_file" 2>&1
+# Install Docker if not present
+if ! command -v docker &> /dev/null; then
+    echo "Installing Docker..." | tee -a "$log_file"
+    curl -sSL https://get.docker.com | sh >> "$log_file" 2>&1
+
+    # Enable and start Docker service
+    echo "Enabling Docker service..." | tee -a "$log_file"
+    systemctl enable docker
+    systemctl start docker
+else
+    echo "Docker already installed, skipping installation..." | tee -a "$log_file"
+fi
 
 # Add current user to docker group
 echo "Adding user to docker group..." | tee -a "$log_file"
 usermod -aG docker $SUDO_USER
 
-# Enable and start Docker service
-echo "Enabling Docker service..." | tee -a "$log_file"
-systemctl enable docker
-systemctl start docker
-
-# Install Docker Compose
-echo "Installing Docker Compose..." | tee -a "$log_file"
-COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)
-curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
+# Install Docker Compose if not present
+if ! command -v docker-compose &> /dev/null; then
+    echo "Installing Docker Compose..." | tee -a "$log_file"
+    COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | jq -r .tag_name)
+    curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
+else
+    echo "Docker Compose already installed, skipping installation..." | tee -a "$log_file"
+fi
 
 # Verify installations
 echo "Verifying installations..." | tee -a "$log_file"
