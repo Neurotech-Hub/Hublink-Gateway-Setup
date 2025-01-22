@@ -46,13 +46,11 @@ git clone https://github.com/Neurotech-Hub/Hublink-Gateway-Setup.git /opt/hublin
 cd /opt/hublink || exit 1
 echo "Repository cloned successfully" | tee -a "$log_file"
 
-# Create default .env file if it doesn't exist
-if [ ! -f .env ]; then
-    echo "Creating default environment configuration..." | tee -a "$log_file"
-    echo "LOCAL_STORAGE_PATH=/opt/hublink" > .env
-    echo "USER=$(logname)" >> .env
-    echo "TZ=$(cat /etc/timezone)" >> .env
-fi
+# Create/update .env file
+echo "Creating environment configuration..." | tee -a "$log_file"
+echo "LOCAL_STORAGE_PATH=/opt/hublink" > .env
+echo "USER=$(logname)" >> .env
+echo "TZ=$(cat /etc/timezone)" >> .env
 
 # Install Docker if not present
 if ! command -v docker &> /dev/null; then
