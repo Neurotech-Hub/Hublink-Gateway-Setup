@@ -51,6 +51,7 @@ if [ ! -f .env ]; then
     echo "Creating default environment configuration..." | tee -a "$log_file"
     echo "LOCAL_STORAGE_PATH=/opt/hublink" > .env
     echo "USER=$(logname)" >> .env
+    echo "TZ=$(cat /etc/timezone)" >> .env
 fi
 
 # Install Docker if not present
