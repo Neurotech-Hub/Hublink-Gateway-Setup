@@ -103,8 +103,12 @@ systemctl restart docker
 
 # Start the services
 echo "Starting HubLink Gateway..." | tee -a "$log_file"
+set -a  # automatically export all variables
+source .env
+set +a  # stop automatically exporting
 docker-compose pull
-docker-compose up -d
+# Run docker-compose as the actual user
+su - $SUDO_USER -c "cd /opt/hublink && docker-compose up -d"
 
 echo "Installation complete! Please log out and back in for group changes to take effect." | tee -a "$log_file"
 echo "Your data will be available at /media/$USER/HUBLINK when a USB drive labeled 'HUBLINK' is connected." 
