@@ -20,9 +20,19 @@ This script will:
 
 The setup script automatically creates `/opt/hublink/.env` with appropriate values:
 ```env
-LOCAL_STORAGE_PATH=/opt/hublink  # Base directory for installation
-USER=$(logname)                  # Current user's username for USB mounting
+LOCAL_STORAGE_PATH=/opt/hublink     # Base directory for installation
+USER=$(logname)                     # Current user's username for USB mounting
+TZ=$(cat /etc/timezone)            # System timezone
+ENVIRONMENT=prod                    # Production environment setting
 ```
+
+These variables configure important system paths:
+- `LOCAL_STORAGE_PATH`: Base directory containing application files and database
+- Database: `${LOCAL_STORAGE_PATH}/hublink.db`
+- Scans: `${LOCAL_STORAGE_PATH}/scans`
+- USB Drive: `/media/${USER}/HUBLINK`
+  - Data: `/media/${USER}/HUBLINK/data`
+  - Config: `/media/${USER}/HUBLINK/hublink.json`
 
 > Note: You should not need to modify these values manually as they are set automatically during installation.
 
@@ -32,6 +42,11 @@ The system is configured to automatically use USB drives labeled "HUBLINK":
 1. Format the drive with a compatible filesystem (e.g., ext4, FAT32)
 2. Label the drive as "HUBLINK"
 3. Insert the drive - all data will be directly stored at `/media/$USER/HUBLINK`
+
+When the USB drive is mounted:
+- Application data is stored in `/media/$USER/HUBLINK/data`
+- Configuration file is stored at `/media/$USER/HUBLINK/hublink.json`
+- The database and scans remain on the local system at `/opt/hublink`
 
 ## Maintenance
 
