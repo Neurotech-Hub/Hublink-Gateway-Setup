@@ -41,7 +41,14 @@ These variables configure important system paths:
 The system is configured to automatically use USB drives labeled "HUBLINK":
 1. Format the drive with a compatible filesystem (e.g., ext4, FAT32)
 2. Label the drive as "HUBLINK"
-3. Insert the drive - all data will be directly stored at `/media/$USER/HUBLINK`
+3. Create a `hublink.json` file in the root of the drive with the appropriate configuration:
+```json  
+{
+  "secret_url": "https://hublink.cloud/<secret_url>",
+  "gateway_name": "Gateway1"
+}
+```
+4. Insert the drive - all data will be directly stored at `/media/$USER/HUBLINK`
 
 When the USB drive is mounted:
 - Application data is stored in `/media/$USER/HUBLINK/data`
