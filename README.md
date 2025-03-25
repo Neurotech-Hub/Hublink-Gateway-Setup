@@ -2,6 +2,10 @@
 
 ## Quick Start
 
+CanaKit RPi's come with pre-installed software, otherwise use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to load the OS onto a 32GB micro SD card.
+
+The name of the RPi should be `hublink` with a documented password.
+
 For installation, download and run the setup script with a single command:
 ```bash
 curl -sSL https://raw.githubusercontent.com/Neurotech-Hub/Hublink-Gateway-Setup/main/setup.sh | sudo bash
@@ -13,6 +17,12 @@ This script will:
 3. Install Docker and required dependencies
 4. Configure the system for USB data storage
 5. Start the HubLink Gateway service
+
+### Using Raspberry Pi Connect (Beta)
+
+New Raspberry Pi's (v5) should have [Raspberry Pi Connect](https://www.raspberrypi.com/software/connect/) installed.
+
+Use the `hi@hublink.cloud` email to register the new device with format `Hublink-RPi-5-XXX`.
 
 ## Configuration
 
@@ -37,6 +47,8 @@ These variables configure important system paths:
 > Note: You should not need to modify these values manually as they are set automatically during installation.
 
 ### USB Drive Setup
+
+You may use the [Hublink-CardFormatter Tool](https://github.com/Neurotech-Hub/Hublink-CardFormatter) to accomplish the steps below.
 
 The system is configured to automatically use USB drives labeled "HUBLINK":
 1. Format the drive with a compatible filesystem (e.g., ext4, FAT32)
