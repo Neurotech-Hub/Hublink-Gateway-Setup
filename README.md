@@ -30,6 +30,8 @@ Use the command `ifconfig` to gain the eth0 and wlan0 mac addresses. Enter these
 
 Use those data to [Add a New Device](https://wustl.service-now.com/sp?id=sc_cat_item&table=sc_cat_item&sys_id=2a8f28881b91e91070f1fc451a4bcb0e) to the WashU network.
 
+Every gateway should be labeled with its name and the MAC address/s.
+
 ## Configuration
 
 ### Environment Variables
