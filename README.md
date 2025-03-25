@@ -20,9 +20,15 @@ This script will:
 
 ### Using Raspberry Pi Connect (Beta)
 
-New Raspberry Pi's (v5) should have [Raspberry Pi Connect](https://www.raspberrypi.com/software/connect/) installed.
+New Raspberry Pi's (v5) may have [Raspberry Pi Connect](https://www.raspberrypi.com/software/connect/) installed. If not, [Use the Instal Instructions](https://www.raspberrypi.com/documentation/services/connect.html).
 
 Use the `hi@hublink.cloud` email to register the new device with format `Hublink-RPi-5-XXX`.
+
+### Registering the MAC Address
+
+Use the command `ifconfig` to gain the eth0 and wlan0 mac addresses. Enter these into the `Box > Hublink > HublinkGateways.xlxs` spreadsheet.
+
+Use those data to [Add a New Device](https://wustl.service-now.com/sp?id=sc_cat_item&table=sc_cat_item&sys_id=2a8f28881b91e91070f1fc451a4bcb0e) to the WashU network.
 
 ## Configuration
 
