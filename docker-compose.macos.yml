@@ -4,7 +4,7 @@ services:
     restart: always
     privileged: false
     ports:
-      - "5000:5000"
+      - "6000:5000"
     stop_grace_period: 30s
     stop_signal: SIGTERM
     logging:
