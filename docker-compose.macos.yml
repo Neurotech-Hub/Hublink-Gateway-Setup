@@ -19,10 +19,10 @@ services:
         max-file: "3"
     volumes:
       - ${LOCAL_STORAGE_PATH}:${LOCAL_STORAGE_PATH}
-      - /Volumes:/media:ro
+      - /Volumes:/Volumes:ro
     environment:
       - LOCAL_STORAGE_PATH=${LOCAL_STORAGE_PATH}
-      - MEDIA_STORAGE_PATH=/media
+      - MEDIA_STORAGE_PATH=/Volumes/HUBLINK
       - ENVIRONMENT=dev
       - TZ=${TZ}
     healthcheck:
