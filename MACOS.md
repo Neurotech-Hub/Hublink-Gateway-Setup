@@ -8,11 +8,12 @@ This guide outlines how to set up the HubLink Gateway for development on macOS.
 2. **Docker Compose** - Install via Homebrew: `brew install docker-compose`
 3. **Git** - Should be pre-installed on macOS, or install via Homebrew: `brew install git`
 
-**Important:** Before starting setup, add `/opt` to Docker Desktop's file sharing settings:
+**Important:** Before starting setup, add the following to Docker Desktop's file sharing settings:
 1. Open Docker Desktop
 2. Go to Settings/Preferences → Resources → File Sharing
 3. Click "+" and add `/opt`
-4. Click "Apply & Restart"
+4. Click "+" and add `/Volumes`
+5. Click "Apply & Restart"
 
 ## Setup Steps
 
