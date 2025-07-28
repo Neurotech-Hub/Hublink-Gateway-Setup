@@ -6,6 +6,11 @@ services:
     network_mode: host
     stop_grace_period: 30s
     stop_signal: SIGTERM
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - ${LOCAL_STORAGE_PATH}:${LOCAL_STORAGE_PATH}
       - /dev:/dev:ro
@@ -25,6 +30,11 @@ services:
   watchtower:
     image: containrrr/watchtower:latest
     restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
