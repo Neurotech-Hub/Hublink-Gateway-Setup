@@ -2,11 +2,12 @@ services:
   hublink-gateway:
     image: neurotechhub/hublink-gateway:dev
     restart: always
-    privileged: false
+    privileged: true
     security_opt:
       - seccomp:unconfined
+      - apparmor:unconfined
     cap_add:
-      - SYS_ADMIN
+      - ALL
     ports:
       - "6000:5000"
     stop_grace_period: 30s
