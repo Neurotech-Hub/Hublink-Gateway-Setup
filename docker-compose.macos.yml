@@ -1,0 +1,39 @@
+services:
+  hublink-gateway:
+    image: neurotechhub/hublink-gateway:dev
+    restart: always
+    privileged: false
+    ports:
+      - "5000:5000"
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - ${LOCAL_STORAGE_PATH}:${LOCAL_STORAGE_PATH}
+      - /Volumes:/media:ro
+    environment:
+      - LOCAL_STORAGE_PATH=${LOCAL_STORAGE_PATH}
+      - MEDIA_STORAGE_PATH=/media
+      - ENVIRONMENT=dev
+      - TZ=${TZ}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/status"]
+      interval: 30s
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=3600 

@@ -5,7 +5,8 @@ This guide outlines how to set up the HubLink Gateway for development on macOS.
 ## Prerequisites
 
 1. **Docker Desktop** - Download and install from [docker.com](https://www.docker.com/products/docker-desktop/)
-2. **Git** - Should be pre-installed on macOS, or install via Homebrew: `brew install git`
+2. **Docker Compose** - Install via Homebrew: `brew install docker-compose`
+3. **Git** - Should be pre-installed on macOS, or install via Homebrew: `brew install git`
 
 ## Setup Steps
 
@@ -49,14 +50,14 @@ mkdir -p /opt/hublink/data
 
 ### 4. Pull and Start Services
 
-**Modify the `docker-compose.yml` file to use the `:dev` container.**
+**Use the macOS-specific docker-compose file:**
 
 ```bash
 # Pull the latest images
-docker-compose pull
+docker-compose -f docker-compose.macos.yml pull
 
 # Start the services
-docker-compose up -d
+docker-compose -f docker-compose.macos.yml up -d
 ```
 
 ### 5. Verify Installation
@@ -78,28 +79,28 @@ docker-compose logs -f
 ### Stopping Services
 
 ```bash
-docker-compose down
+docker-compose -f docker-compose.macos.yml down
 ```
 ### Restarting Services
 
 ```bash
-docker-compose restart
+docker-compose -f docker-compose.macos.yml restart
 ```
 
 ### Viewing Logs
 
 ```bash
 # All services
-docker-compose logs -f
+docker-compose -f docker-compose.macos.yml logs -f
 
 # Specific service
-docker-compose logs -f hublink-gateway
+docker-compose -f docker-compose.macos.yml logs -f hublink-gateway
 ```
 
 ### Accessing Container Shell
 
 ```bash
-docker-compose exec hublink-gateway bash
+docker-compose -f docker-compose.macos.yml exec hublink-gateway bash
 ```
 
 ## Configuration
@@ -154,7 +155,7 @@ If Docker Desktop isn't running:
 Check the logs for errors:
 
 ```bash
-docker-compose logs hublink-gateway
+docker-compose -f docker-compose.macos.yml logs hublink-gateway
 ```
 
 Common issues:

@@ -89,6 +89,14 @@ docker-compose up -d  # Restart with new versions
 
 The system includes Watchtower for automatic container updates.
 
+#### Fetching the Github Repo
+This is for **developers only** to fetch the latest files.
+
+```bash
+git fetch origin
+git reset --hard origin/main
+```
+
 ### Common Commands
 
 1. View gateway status:
