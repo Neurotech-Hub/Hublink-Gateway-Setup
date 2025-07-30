@@ -3,7 +3,8 @@ services:
     image: neurotechhub/hublink-gateway:latest
     restart: always
     privileged: true
-    network_mode: host
+    ports:
+      - "6000:5000"
     stop_grace_period: 30s
     stop_signal: SIGTERM
     logging:
