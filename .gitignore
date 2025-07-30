@@ -58,4 +58,3 @@ vendor/
 # Build outputs
 dist/
 build/
-.env
