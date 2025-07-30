@@ -24,7 +24,7 @@ services:
       - ENVIRONMENT=prod
       - TZ=${TZ}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/status"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
 
   watchtower:
