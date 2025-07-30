@@ -87,15 +87,16 @@ docker-compose pull  # Update containers
 docker-compose up -d  # Restart with new versions
 ```
 
-The system includes Watchtower for automatic container updates.
-
-#### Fetching the Github Repo
-This is for **developers only** to fetch the latest files.
-
+To force update and overwrite any local changes:
 ```bash
-git fetch origin
-git reset --hard origin/main
+cd /opt/hublink
+sudo git fetch origin
+sudo git reset --hard origin/main  # This will overwrite all local changes
+docker-compose pull  # Update containers
+docker-compose up -d  # Restart with new versions
 ```
+
+The system includes Watchtower for automatic container updates.
 
 ### Common Commands
 
