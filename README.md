@@ -77,7 +77,7 @@ When the USB drive is mounted:
 
 ## Maintenance
 
-### Updating the Gateway
+### Updating the Gateway Config Files
 
 To update your installation:
 ```bash
