@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e  # Exit on error
-log_file="install.log"
+log_file="/tmp/hublink-gateway-install.log"
 
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then 
@@ -44,12 +44,9 @@ echo "Preparing installation directory..." | tee -a "$log_file"
 cd /
 rm -rf /opt/hublink
 mkdir -p /opt/hublink
-cd /opt/hublink || exit 1
 
 # Clone the repository with more verbose output
 echo "Downloading HubLink Gateway Setup..." | tee -a "$log_file"
-cd /
-rm -rf /opt/hublink
 git clone https://github.com/Neurotech-Hub/Hublink-Gateway-Setup.git /opt/hublink 2>> "$log_file" || {
     echo "Git clone failed! See $log_file for details" | tee -a "$log_file"
     cat "$log_file"
