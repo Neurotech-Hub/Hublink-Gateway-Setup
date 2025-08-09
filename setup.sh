@@ -11,20 +11,32 @@ fi
 
 echo "Starting HubLink Gateway installation..." | tee -a "$log_file"
 
-# Stop any existing containers first
+# Stop any existing gateway containers first (only hublink-gateway containers)
 if command -v docker &> /dev/null && systemctl is-active --quiet docker; then
-    echo "Stopping existing Docker containers..." | tee -a "$log_file"
+    echo "Stopping existing Hublink Gateway containers..." | tee -a "$log_file"
     
     # First move out of /opt/hublink in case we're in it
     cd /
 
+    # Stop containers using docker-compose if the file exists (this only affects hublink-gateway)
     if [ -f "/opt/hublink/docker-compose.yml" ]; then
-        echo "Stopping via docker-compose..." | tee -a "$log_file"
+        echo "Stopping hublink-gateway via docker-compose..." | tee -a "$log_file"
         (cd /opt/hublink && docker-compose down) || echo "docker-compose down failed, continuing..." | tee -a "$log_file"
     fi
     
-    echo "Checking for remaining hublink containers..." | tee -a "$log_file"
-    docker ps -q --filter "name=hublink" | xargs -r docker stop || echo "No remaining containers to stop" | tee -a "$log_file"
+    # Only stop containers that are specifically named hublink-gateway (targeted approach)
+    echo "Checking for any remaining hublink-gateway containers..." | tee -a "$log_file"
+    # Look for containers with hublink-gateway in the name (exact match or Docker Compose patterns)
+    if docker ps --format "{{.Names}}" | grep -q "hublink.*gateway"; then
+        echo "Found hublink-gateway containers, stopping them..." | tee -a "$log_file"
+        docker ps --format "{{.Names}}" | grep "hublink.*gateway" | xargs -r docker stop || echo "Failed to stop some hublink-gateway containers, continuing..." | tee -a "$log_file"
+    else
+        echo "No hublink-gateway containers found to stop" | tee -a "$log_file"
+    fi
+elif command -v docker &> /dev/null; then
+    echo "Docker is installed but not running, skipping container cleanup..." | tee -a "$log_file"
+else
+    echo "Docker not found, skipping container cleanup..." | tee -a "$log_file"
 fi
 
 # Remove existing directory completely and recreate fresh
