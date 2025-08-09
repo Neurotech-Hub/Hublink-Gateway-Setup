@@ -2,6 +2,8 @@
 
 ## Quick Start
 
+### Raspberry Pi Setup
+
 CanaKit RPi's come with pre-installed software, otherwise use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to load the OS onto a 32GB micro SD card.
 
 The name of the RPi should be `hublink` with a documented password.
@@ -17,6 +19,49 @@ This script will:
 3. Install Docker and required dependencies
 4. Configure the system for USB data storage
 5. Start the HubLink Gateway service
+
+### macOS Development Setup
+
+**Prerequisites:**
+- Docker Desktop - Download from [docker.com](https://www.docker.com/products/docker-desktop/)
+- Docker Compose - Install via Homebrew: `brew install docker-compose`
+- Git - Install via Homebrew: `brew install git`
+
+**Important:** Before starting setup, add the following to Docker Desktop's file sharing settings:
+1. Open Docker Desktop → Settings/Preferences → Resources → File Sharing
+2. Click "+" and add `/opt` and `/Volumes`
+3. Click "Apply & Restart"
+
+**Setup Steps:**
+```bash
+# Create installation directory
+sudo mkdir -p /opt/hublink
+sudo chown $(whoami):staff /opt/hublink
+cd /opt/hublink
+
+# Clone repository
+git clone https://github.com/Neurotech-Hub/Hublink-Gateway-Setup.git .
+
+# Create environment configuration
+cat > .env << EOL
+LOCAL_STORAGE_PATH=/opt/hublink
+USER=$(whoami)
+TZ=America/Chicago
+EOL
+
+# Create required directories
+mkdir -p /opt/hublink/data
+
+# Start services (use macOS-specific compose file)
+docker-compose -f docker-compose.macos.yml pull
+docker-compose -f docker-compose.macos.yml up -d
+```
+
+**macOS-specific Commands:**
+- Stop services: `docker-compose -f docker-compose.macos.yml down`
+- Restart services: `docker-compose -f docker-compose.macos.yml restart`
+- View logs: `docker-compose -f docker-compose.macos.yml logs -f`
+- Access container: `docker-compose -f docker-compose.macos.yml exec hublink-gateway bash`
 
 ### Using Raspberry Pi Connect (Beta)
 
@@ -83,8 +128,12 @@ To update your installation:
 ```bash
 cd /opt/hublink
 sudo git pull  # Update configuration files
+# For Raspberry Pi:
 docker-compose pull  # Update containers
 docker-compose up -d  # Restart with new versions
+# For macOS:
+docker-compose -f docker-compose.macos.yml pull  # Update containers
+docker-compose -f docker-compose.macos.yml up -d  # Restart with new versions
 ```
 
 To force update and overwrite any local changes:
@@ -92,8 +141,12 @@ To force update and overwrite any local changes:
 cd /opt/hublink
 sudo git fetch origin
 sudo git reset --hard origin/main  # This will overwrite all local changes
+# For Raspberry Pi:
 docker-compose pull  # Update containers
 docker-compose up -d  # Restart with new versions
+# For macOS:
+docker-compose -f docker-compose.macos.yml pull  # Update containers
+docker-compose -f docker-compose.macos.yml up -d  # Restart with new versions
 ```
 
 The system includes Watchtower for automatic container updates.
@@ -103,7 +156,10 @@ The system includes Watchtower for automatic container updates.
 1. View gateway status:
 ```bash
 docker ps
+# For Raspberry Pi:
 docker-compose logs -f
+# For macOS:
+docker-compose -f docker-compose.macos.yml logs -f
 ```
 
 2. Check USB drive status:
@@ -115,7 +171,10 @@ df -h  # Check mount status
 3. Restart services:
 ```bash
 cd /opt/hublink
+# For Raspberry Pi:
 docker-compose restart
+# For macOS:
+docker-compose -f docker-compose.macos.yml restart
 ```
 
 ## Troubleshooting
@@ -130,7 +189,12 @@ docker-compose restart
 2. Data access issues:
    - Check USB drive is mounted: `ls /media/$USER/HUBLINK`
    - Verify permissions: `ls -l /media/$USER/HUBLINK`
-   - Check docker logs: `docker-compose logs -f`
+   - Check docker logs: `docker-compose logs -f` (use `-f docker-compose.macos.yml` on macOS)
+
+3. **macOS-specific issues:**
+   - Permission issues: `sudo chown -R $(whoami):$(whoami) /opt/hublink`
+   - Port conflicts: Check with `lsof -i :5000`
+   - Docker Desktop not running: Open Docker Desktop application and wait for it to start
 
 ### Support
 
