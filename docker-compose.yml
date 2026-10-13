@@ -1,6 +1,11 @@
+# Gateway rings (plan WP7): the image tag is pinned per ring in .env
+# (GATEWAY_TAG=stable by default; GATEWAY_TAG=canary on the lab Pi). Watchtower's
+# hourly `:latest` pull is gone: a new build reaches a Pi only when its ring's tag
+# is moved and the Pi runs `docker-compose pull && docker-compose up -d`
+# (see README "Rings").
 services:
   hublink-gateway:
-    image: neurotechhub/hublink-gateway:latest
+    image: ${GATEWAY_IMAGE:-public.ecr.aws/k3u6u5c1/hublink/gateway}:${GATEWAY_TAG:-stable}
     restart: always
     privileged: true
     network_mode: host
@@ -26,17 +31,3 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
-
-  watchtower:
-    image: containrrr/watchtower:latest
-    restart: always
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_POLL_INTERVAL=3600

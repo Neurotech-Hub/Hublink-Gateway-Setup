@@ -60,6 +60,8 @@ echo "Creating environment configuration..." | tee -a "$log_file"
 echo "LOCAL_STORAGE_PATH=/opt/hublink" > .env
 echo "USER=$(logname)" >> .env
 echo "TZ=$(cat /etc/timezone)" >> .env
+# Ring: stable unless this Pi is a canary (GATEWAY_TAG=canary sudo bash setup.sh)
+echo "GATEWAY_TAG=${GATEWAY_TAG:-stable}" >> .env
 
 # Install Docker if not present
 if ! command -v docker &> /dev/null; then

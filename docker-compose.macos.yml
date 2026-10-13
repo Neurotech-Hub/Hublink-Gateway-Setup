@@ -1,6 +1,6 @@
 services:
   hublink-gateway:
-    image: neurotechhub/hublink-gateway:dev
+    image: ${GATEWAY_IMAGE:-public.ecr.aws/k3u6u5c1/hublink/gateway}:${GATEWAY_TAG:-canary}
     restart: always
     privileged: true
     security_opt:
@@ -31,17 +31,3 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
-
-  watchtower:
-    image: containrrr/watchtower:latest
-    restart: always
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_POLL_INTERVAL=3600 
